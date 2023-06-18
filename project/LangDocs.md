@@ -99,7 +99,7 @@ expr = '(' expr ')'             // скобки указывают приори�
   | get_labels expr             // получить все метки
   | map lambda 'of' expr        // классический map
   | filter lambda 'of' expr     // классический filter
-  | load '"' STRING '"'         // загрузка графа
+  | load  STRING                // загрузка графа
   | expr '&' expr               // пересечение языков, множеств
   | expr '|' expr               // конкатенация языков
   | expr '+' expr               // объединение языков, множеств
@@ -115,27 +115,27 @@ args -> var
 Пример запроса в конкретном синтаксисе.
 
 ```
-let g' = load "wine"
+let g' = load "wine";
 
-let g = set_start {0...100} to (set_finals (get_vertices g') to g')
+let g = set_start {0...100} to (set_finals (get_vertices g') to g');
 
-let l1 = "l1" | "l2"
+let l1 = "l1" | "l2";
 
-let q1 = ("type" | l1)*
-let q2 = "abc" >> g
+let q1 = ("type" | l1)*;
+let q2 = "abc" >> g;
 
-let res1 = g & q1
-let res2 = g & q2
+let res1 = g & q1;
+let res2 = g & q2;
 
-print res1
+print res1;
 
-let s = get_reachable g
+let s = get_reachable g;
 
-let vertices1 = filter v -> {v in s} (map ((u_g,u_q1),l,(v_g,v_q1)) -> {u_g} (get_edges res1))
-let vertices2 = filter v -> {v in s} (map ((u_g,u_q2),l,(v_g,v_q2)) -> {u_g} (get_edges res2))
-let vertices = vertices1 & vertices2
+let vertices1 = filter v -> {v in s} of (map ((u_g,u_q1),l,(v_g,v_q1)) -> {u_g} (get_edges res1));
+let vertices2 = filter v -> {v in s} of (map ((u_g,u_q2),l,(v_g,v_q2)) -> {u_g} (get_edges res2));
+let vertices = vertices1 & vertices2;
 
-print vertices
+print vertices;
 ```
 
 ## Правила вывода типов
@@ -343,4 +343,11 @@ _____________________________________
 _____________________________________
 [Load (p)](b1) => (fa | fa.start = fa.vertices, fa.final = fa.vertices), b1
 
+```
+
+
+Генерация парсера:
+```shell
+rm -rf parser/MyGQL*
+antlr4 -o parser MyGQL.g4  -Dlanguage=Python3
 ```
