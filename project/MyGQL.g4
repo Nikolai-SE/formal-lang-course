@@ -5,60 +5,53 @@ grammar MyGQL;
 prog : ( stmt ';' )* EOF ;
 
 stmt : bind | print ;
-bind : LET ID '=' expr ;
-print : PRINT expr ;
+bind : 'let' var '=' expr ;
+print : 'print' expr ;
 
-val : BOOL | INT | STRING | set;
+val : valBool | valInt | valString | set;
 var : ID ;
-set : LBRC RBRC                    // множество
-     | LBRC expr (COMMA expr )* RBRC
-     | LBRC INT '...' INT RBRC      // range of INTs [a, b)
+set : '{' '}'                       # emptySet  // пустое множество
+     | '{' expr (',' expr )* '}'    # setElem   // множество из элементов
+     | '{' valInt '...' valInt '}'  # setIntRange  // range of INTs [a, b)
      ;
 
-expr : LP expr RP               // скобки указывают приоритет операций
-  | var                         // переменные
-  | val                         // константы
-  | 'set_start' expr  expr      // задать множество стартовых состояний
-  | 'set_final' expr TO expr    // задать множество финальных состояний
-  | 'add_start' expr TO expr    // добавить состояния в множество стартовых
-  | 'add_final' expr TO expr    // добавить состояния в множество финальных
-  | 'get_start' expr            // получить множество стартовых состояний
-  | 'get_final' expr            // получить множество финальных состояний
-  | 'get_reachable' expr        // получить все пары достижимых вершин
-  | 'get_vertices' expr         // получить все вершины
-  | 'get_edges' expr            // получить все рёбра
-  | 'get_labels' expr           // получить все метки
-  | 'map' lambda OF expr        // классический map
-  | 'filter' lambda OF expr     // классический filter
-  | 'load' STRING               // загрузка графа
-  | expr '&' expr               // пересечение языков, множеств
-  | expr '|' expr               // конкатенация языков
-  | expr '+' expr               // объединение языков, множеств
-  | '*' expr                    // замыкание языков (звезда Клини)
-  | expr '>>' expr              // единичный переход  symb >> lang
-  | expr 'in' expr              // проверка наличия в множестве
+expr : '(' expr ')'             #exprParentheses  // скобки указывают приоритет операций
+  | var                         #exprVar // переменные
+  | val                         #exprVal // константы
+  | 'set_start' expr 'to' expr  #exprSetStart // задать множество стартовых состояний
+  | 'set_final' expr 'to' expr  #exprSetFinal  // задать множество финальных состояний
+  | 'add_start' expr 'to' expr  #exprAddStart  // добавить состояния в множество стартовых
+  | 'add_final' expr 'to' expr  #exprAddFinal  // добавить состояния в множество финальных
+  | 'get_start' expr            #exprGetStart // получить множество стартовых состояний
+  | 'get_final' expr            #exprGetFinal // получить множество финальных состояний
+  | 'get_reachable' expr        #exprGetReachable // получить все пары достижимых вершин
+  | 'get_vertices' expr         #exprGetVertices // получить все вершины
+  | 'get_edges' expr            #exprGetEdges // получить все рёбра
+  | 'get_labels' expr           #exprGetLabels // получить все метки
+  | 'map' lambda 'of' expr      #exprMap  // классический map
+  | 'filter' lambda 'of' expr   #exprFilter  // классический filter
+  | 'load' valString            #exprLoad   // загрузка графа
+  | expr '&' expr               #exprIntersect // пересечение языков, множеств
+  | expr '|' expr               #exprConcat // конкатенация языков
+  | expr '+' expr               #exprUnion // объединение языков, множеств
+  | '*' expr                    #exprKlini // замыкание языков (звезда Клини)
+  | expr '>>' expr              #exprShift // единичный переход  symb >> lang
+  | expr 'in' expr              #exprInChecking // проверка наличия в множестве
   ;
 
-lambda : args '->' LBRC expr RBRC ;
-args : var
-     | LP args (COMMA args)* RP;
+valInt : INT;
+valBool : BOOL;
+valString : STRING;
+
+lambda : args '->' '{' expr '}' ;
+args : var                      #argsSingle
+     | '(' args (',' args)* ')' #argsGroup
+     ;
 
 // LEXIS
 
 BOOL : 'true' | 'false' ;
 INT : [0-9]+ ;
-
-LET : 'let';
-PRINT : 'print';
-TO : 'to';
-OF : 'of';
-
-LP : '(';
-RP : ')';
-LBRC : '{';
-RBRC : '}';
-COMMA : ',';
-
 
 ID : NameStartChar | NameStartChar NameChar* ;
 
