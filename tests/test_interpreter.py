@@ -114,6 +114,20 @@ def test_with_loading():
     )
 
 
-def test_discard_simple():
+def test_impossible_operations():
+    dir_name = "test_files"
+    fileA = dir_name + "/" + "graphA.txt"
+    assert interpret_string('print 42 in {"asdfg"};') == "False\n"
+    assert (
+        interpret_string(f'print get_final load "{fileA}" in {"{"}"qwerty"{"}"};')
+        == "False\n"
+    )
     assert interpret_string('print 1 in {"asdfg"};') == "False\n"
-    assert interpret_string('let x = 1; print x in {"asdasd"};') == "False\n"
+    assert (
+        interpret_string('let x = 1; print x & x in {"asdasd"};')
+        == "Can't intersect <class 'int'> and <class 'int'>\nStop: syntax error\n"
+    )
+    assert (
+        interpret_string("let x = 42; print get_labels x ;")
+        == "Can't get edges of 42 : <class 'int'>\nStop: syntax error\n"
+    )

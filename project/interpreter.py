@@ -68,11 +68,11 @@ class ErrorVisitor(Visitor):
         self.has_error = True
 
 
-def mapperCollector(output: set, x, fold_x):
+def _mapperCollector(output: set, x, fold_x):
     output.add(fold_x)
 
 
-def filterCollector(out: set, x, fold_x):
+def _filterCollector(out: set, x, fold_x):
     if fold_x:
         out.add(x)
 
@@ -134,13 +134,13 @@ class RunnerVisitor(Visitor):
         return frozenset(out)
 
     def visitExprMap(self, ctx: Parser.ExprMapContext):
-        self._collectors_stack.append(mapperCollector)
+        self._collectors_stack.append(_mapperCollector)
         result = self._folder(ctx)
         self._collectors_stack.pop()
         return result
 
     def visitExprFilter(self, ctx: Parser.ExprFilterContext):
-        self._collectors_stack.append(filterCollector)
+        self._collectors_stack.append(_filterCollector)
         result = self._folder(ctx)
         self._collectors_stack.pop()
         return result
